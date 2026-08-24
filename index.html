@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>和 Flashcards — Belajar Kotoba Jepang</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --radius-xl: 28px;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --gap: 12px;
+    --ease: cubic-bezier(.22,.9,.3,1);
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    min-height:100dvh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    background:#e8e2da;
+    font-family:'Poppins','Noto Sans JP',sans-serif;
+  }
+  button{ font:inherit; }
+
+  /* ============ THEME TOKENS ============ */
+  .app{
+    --bg-sky-top: #ffe7ec;
+    --bg-sky-mid: #fff1ea;
+    --bg-sky-bot: #fdf7f0;
+    --ink: #2b241f;
+    --ink-soft: #7a6d64;
+    --ink-faint: #a89a90;
+    --card-bg: #ffffff;
+    --card-bg-soft: #fffaf6;
+    --card-border: rgba(43,36,31,0.08);
+    --accent-sakura: #e78fa6;
+    --accent-sakura-deep: #d1637e;
+    --accent-indigo: #3d5a78;
+    --accent-gold: #c69657;
+    --fuji-fill: #b7c3da;
+    --fuji-snow: #ffffff;
+    --hill-fill: #cdd9c9;
+    --tower-color: #9fb0c9;
+    --tower-glow: transparent;
+    --shadow-soft: 0 14px 34px rgba(70,45,40,0.10);
+    --shadow-card: 0 18px 40px rgba(70,45,40,0.14);
+    --color-correct: #4f9d6e;
+    --color-wrong: #c65c56;
+    --sun-op: 1; --moon-op: 0; --star-op: 0; --bird-op: .55;
+    --transition: background .5s var(--ease), color .5s var(--ease), border-color .5s var(--ease);
+  }
+  .app[data-theme="dark"]{
+    --bg-sky-top: #171a30;
+    --bg-sky-mid: #10101f;
+    --bg-sky-bot: #0b0b14;
+    --ink: #f2ede4;
+    --ink-soft: #b6aec2;
+    --ink-faint: #6c6480;
+    --card-bg: #1b1d30;
+    --card-bg-soft: #20223a;
+    --card-border: rgba(244,239,231,0.09);
+    --accent-sakura: #e6a3b8;
+    --accent-sakura-deep: #f0b6c7;
+    --accent-indigo: #9fc0e8;
+    --accent-gold: #e3c283;
+    --fuji-fill: #232544;
+    --fuji-snow: #3a3c66;
+    --hill-fill: #191a30;
+    --tower-color: #cba15f;
+    --tower-glow: #ffd98a;
+    --shadow-soft: 0 14px 34px rgba(0,0,0,0.45);
+    --shadow-card: 0 18px 44px rgba(0,0,0,0.55);
+    --color-correct: #7fd9a0;
+    --color-wrong: #f08a86;
+    --sun-op: 0; --moon-op: 1; --star-op: 1; --bird-op: 0;
+  }
+
+  /* ============ SHELL ============ */
+  .app{
+    position:relative; width:100%; max-width:430px; min-height:100dvh;
+    overflow-x:hidden; overflow-y:auto;
+    background: linear-gradient(180deg, var(--bg-sky-top) 0%, var(--bg-sky-mid) 45%, var(--bg-sky-bot) 100%);
+    color:var(--ink); transition:var(--transition);
+    box-shadow: 0 0 60px rgba(0,0,0,0.18);
+  }
+  .scenery{ position:absolute; top:0; left:0; right:0; height:210px; overflow:hidden; pointer-events:none; z-index:0; }
+  .scenery svg{ width:100%; height:100%; display:block; }
+  .scenery .sun-disc{ opacity:var(--sun-op); transition:opacity .6s var(--ease); }
+  .scenery .moon-disc{ opacity:var(--moon-op); transition:opacity .6s var(--ease); }
+  .scenery .stars{ opacity:var(--star-op); transition:opacity .6s var(--ease); }
+  .scenery .birds{ opacity:var(--bird-op); transition:opacity .6s var(--ease); }
+  .scenery .fuji-body{ fill:var(--fuji-fill); transition:fill .5s var(--ease); }
+  .scenery .fuji-snow{ fill:var(--fuji-snow); transition:fill .5s var(--ease); }
+  .scenery .hill{ fill:var(--hill-fill); transition:fill .5s var(--ease); }
+  .scenery .tower-lines{ stroke:var(--tower-color); transition:stroke .5s var(--ease); }
+  .scenery .tower-dot{ fill:var(--tower-glow); transition:fill .5s var(--ease); }
+
+  .petals{ position:absolute; inset:0; height:340px; z-index:1; pointer-events:none; overflow:hidden; }
+  .petal{ position:absolute; top:-10%; width:9px; height:9px; background:var(--accent-sakura); border-radius:0 100% 0 100%; opacity:.7; animation: fall linear infinite; transition: background .5s var(--ease); }
+  @keyframes fall{ 0%{ transform: translate(0,0) rotate(0deg);} 100%{ transform: translate(var(--drift,30px), 320px) rotate(340deg);} }
+
+  /* ============ TOPBAR ============ */
+  .content{ position:relative; z-index:2; padding: 18px 16px 34px; }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .brand{ display:flex; flex-direction:column; gap:2px; }
+  .brand .eyebrow{ font-family:'Noto Sans JP',sans-serif; font-size:11px; letter-spacing:.14em; font-weight:500; color:var(--ink-soft); text-transform:uppercase; }
+  .brand .title{ display:flex; align-items:baseline; gap:8px; font-family:'Zen Kaku Gothic New','Poppins',sans-serif; font-weight:900; font-size:23px; color:var(--ink); }
+  .brand .rule{ width:34px; height:3px; border-radius:2px; margin-top:4px; background: linear-gradient(90deg, var(--accent-gold), var(--accent-sakura)); }
+
+  .theme-toggle{ position:relative; width:60px; height:32px; border-radius:999px; border:1px solid var(--card-border); background:var(--card-bg); box-shadow: var(--shadow-soft); cursor:pointer; display:flex; align-items:center; padding:3px; transition:var(--transition); flex-shrink:0; }
+  .theme-toggle .knob{ width:24px; height:24px; border-radius:50%; background: linear-gradient(155deg, var(--accent-gold), var(--accent-sakura-deep)); display:flex; align-items:center; justify-content:center; transform: translateX(0); transition: transform .4s var(--ease); box-shadow: 0 3px 8px rgba(0,0,0,.25); }
+  .app[data-theme="dark"] .theme-toggle .knob{ transform: translateX(28px); }
+  .theme-toggle .knob svg{ width:14px; height:14px; }
+  .theme-toggle .icon-static{ position:absolute; }
+  .theme-toggle .icon-static.sun{ left:8px; } .theme-toggle .icon-static.moon{ right:7px; }
+  .theme-toggle .icon-static svg{ width:14px; height:14px; opacity:.55; }
+  .theme-toggle .icon-static.sun svg{ stroke:var(--accent-gold); }
+  .theme-toggle .icon-static.moon svg{ stroke:var(--accent-indigo); }
+
+  /* ============ SCREEN TRANSITION ============ */
+  .screen-inner{ animation: screenIn .38s var(--ease); }
+  @keyframes screenIn{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:translateY(0);} }
+
+  /* ============ BENTO BASE ============ */
+  .bento-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+  .bento{ background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius-lg); box-shadow:var(--shadow-soft); transition:var(--transition); }
+  .span-2{ grid-column: 1 / -1; }
+
+  .stat-tile{ padding:16px 16px 14px; display:flex; flex-direction:column; gap:10px; }
+  .stat-tile .icon-wrap{ width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center; background: linear-gradient(155deg, rgba(198,150,87,.16), rgba(231,143,166,.16)); }
+  .stat-tile .icon-wrap svg{ width:18px; height:18px; stroke:var(--accent-gold); }
+  .stat-tile.learned .icon-wrap svg{ stroke:var(--accent-indigo); }
+  .stat-tile .num{ font-family:'Poppins',sans-serif; font-weight:700; font-size:24px; line-height:1; color:var(--ink); }
+  .stat-tile .num .unit{ font-size:13px; font-weight:500; color:var(--ink-soft); margin-left:2px; }
+  .stat-tile .cap{ font-family:'Noto Sans JP',sans-serif; font-size:11.5px; color:var(--ink-soft); font-weight:500; }
+
+  .section-label{ font-family:'Noto Sans JP',sans-serif; font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--ink-faint); text-transform:uppercase; margin: 20px 2px 10px; }
+
+  .progress-bar{ width:100%; height:5px; border-radius:4px; background:var(--card-border); overflow:hidden; }
+  .progress-bar span{ display:block; height:100%; border-radius:4px; background:linear-gradient(90deg,var(--accent-gold),var(--accent-sakura)); transition:width .4s var(--ease); }
+
+  /* Accent styling */
+  .accent-gold .emblem, .accent-gold .g-icon, .g-icon.accent-gold{ background:linear-gradient(155deg, var(--accent-gold), var(--accent-sakura-deep)); }
+  .accent-indigo .emblem, .accent-indigo .g-icon, .g-icon.accent-indigo{ background:linear-gradient(155deg, var(--accent-indigo), var(--accent-gold)); }
+  .accent-sakura .emblem, .accent-sakura .g-icon, .g-icon.accent-sakura{ background:linear-gradient(155deg, var(--accent-sakura-deep), var(--accent-indigo)); }
+  .accent-gold{ --tile-glow: var(--accent-gold); }
+  .accent-indigo{ --tile-glow: var(--accent-indigo); }
+  .accent-sakura{ --tile-glow: var(--accent-sakura-deep); }
+
+  /* ============ HERO CARDS (BAB & TEST CTA) ============ */
+  .bab-tile{ display:block; width:100%; text-align:left; border:1px solid var(--card-border); background:var(--card-bg); border-radius:var(--radius-xl); padding:20px; box-shadow:var(--shadow-soft); cursor:pointer; position:relative; overflow:hidden; margin-bottom:14px; color:var(--ink); }
+  .bab-tile .glow{ position:absolute; width:170px; height:170px; border-radius:50%; filter:blur(6px); opacity:.3; top:-60px; right:-50px; background: radial-gradient(circle, var(--tile-glow, var(--accent-indigo)), transparent 70%); }
+  .bab-tile .emblem{ width:54px; height:54px; border-radius:17px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; position:relative; z-index:1; box-shadow:0 8px 18px rgba(0,0,0,.12); }
+  .bab-tile .emblem svg{ width:27px; height:27px; stroke:#fff; }
+  .bab-tile .eyebrow{ position:relative; z-index:1; font-family:'Noto Sans JP',sans-serif; font-size:10.5px; letter-spacing:.14em; font-weight:600; color:var(--ink-faint); text-transform:uppercase; }
+  .bab-tile .bab-title{ position:relative; z-index:1; font-family:'Zen Kaku Gothic New',sans-serif; font-weight:900; font-size:19px; margin:4px 0 6px; color:var(--ink); line-height:1.25; }
+  .bab-tile .bab-desc{ position:relative; z-index:1; font-family:'Noto Sans JP',sans-serif; font-size:12.5px; color:var(--ink-soft); line-height:1.55; margin-bottom:16px; max-width:92%; }
+  .bab-tile .bab-meta{ position:relative; z-index:1; display:flex; gap:18px; margin-bottom:12px; }
+  .bab-tile .bab-meta .meta-num{ font-family:'Poppins',sans-serif; font-weight:700; font-size:16px; color:var(--ink); }
+  .bab-tile .bab-meta .meta-label{ font-family:'Noto Sans JP',sans-serif; font-size:10px; color:var(--ink-faint); }
+  .bab-tile .bab-progress{ position:relative; z-index:1; }
+  .bab-tile .bab-progress-label{ display:flex; justify-content:space-between; font-family:'Poppins',sans-serif; font-size:10.5px; font-weight:600; color:var(--ink-faint); margin-bottom:5px; }
+
+  .bab-tile.accent-gold{ background: linear-gradient(150deg, color-mix(in srgb, var(--accent-gold) 22%, var(--card-bg)) 0%, color-mix(in srgb, var(--accent-sakura-deep) 10%, var(--card-bg)) 100%); border-color: color-mix(in srgb, var(--accent-gold) 35%, var(--card-border)); }
+  .bab-tile.accent-indigo{ background: linear-gradient(150deg, color-mix(in srgb, var(--accent-indigo) 22%, var(--card-bg)) 0%, color-mix(in srgb, var(--accent-gold) 10%, var(--card-bg)) 100%); border-color: color-mix(in srgb, var(--accent-indigo) 35%, var(--card-border)); }
+  .bab-tile.accent-sakura{ background: linear-gradient(150deg, color-mix(in srgb, var(--accent-sakura-deep) 22%, var(--card-bg)) 0%, color-mix(in srgb, var(--accent-indigo) 10%, var(--card-bg)) 100%); border-color: color-mix(in srgb, var(--accent-sakura-deep) 35%, var(--card-border)); }
+
+  /* Tombol Latihan CTA */
+  .bab-tile.test-cta{
+    background: linear-gradient(150deg, color-mix(in srgb, var(--accent-indigo) 20%, var(--card-bg)) 0%, color-mix(in srgb, var(--accent-sakura-deep) 14%, var(--card-bg)) 50%, color-mix(in srgb, var(--accent-gold) 14%, var(--card-bg)) 100%);
+    border-color: color-mix(in srgb, var(--accent-indigo) 35%, var(--card-border));
+    --tile-glow: var(--accent-indigo);
+  }
+  .bab-tile.test-cta .emblem{
+    background: linear-gradient(155deg, var(--accent-indigo), var(--accent-sakura-deep));
+  }
+
+  .group-row.accent-gold{ background: linear-gradient(120deg, color-mix(in srgb, var(--accent-gold) 14%, var(--card-bg)) 0%, var(--card-bg) 65%); border-color: color-mix(in srgb, var(--accent-gold) 28%, var(--card-border)); }
+  .group-row.accent-indigo{ background: linear-gradient(120deg, color-mix(in srgb, var(--accent-indigo) 14%, var(--card-bg)) 0%, var(--card-bg) 65%); border-color: color-mix(in srgb, var(--accent-indigo) 28%, var(--card-border)); }
+  .group-row.accent-sakura{ background: linear-gradient(120deg, color-mix(in srgb, var(--accent-sakura-deep) 14%, var(--card-bg)) 0%, var(--card-bg) 65%); border-color: color-mix(in srgb, var(--accent-sakura-deep) 28%, var(--card-border)); }
+
+  .reset-link{ display:block; margin:18px auto 0; padding:8px 14px; background:none; border:none; cursor:pointer; font-family:'Noto Sans JP',sans-serif; font-size:11px; font-weight:500; color:var(--ink-faint); text-decoration:underline; text-underline-offset:3px; }
+  .reset-link:hover{ color:var(--accent-sakura-deep); }
+
+  /* ============ BACK ROW ============ */
+  .back-row{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .back-btn{ width:36px; height:36px; border-radius:12px; background:var(--card-bg); border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-soft); cursor:pointer; flex-shrink:0; }
+  .back-btn svg{ width:16px; height:16px; stroke:var(--ink-soft); }
+  .crumb{ display:flex; flex-direction:column; gap:1px; min-width:0; flex:1; }
+  .crumb .eyebrow{ font-family:'Noto Sans JP',sans-serif; font-size:10.5px; letter-spacing:.12em; font-weight:600; color:var(--ink-faint); text-transform:uppercase; }
+  .crumb .crumb-title{ font-family:'Zen Kaku Gothic New',sans-serif; font-weight:700; font-size:17px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* ============ CHAPTER GROUP ROWS ============ */
+  .group-row{ display:flex; align-items:center; gap:14px; width:100%; text-align:left; background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:14px 14px; box-shadow:var(--shadow-soft); cursor:pointer; margin-bottom:10px; }
+  .group-row .g-icon{ width:46px; height:46px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .group-row .g-icon svg{ width:21px; height:21px; stroke:#fff; }
+  .group-row .g-body{ flex:1; min-width:0; }
+  .group-row .g-title{ font-family:'Noto Sans JP',sans-serif; font-weight:700; font-size:14px; color:var(--ink); margin-bottom:2px; }
+  .group-row .g-desc{ font-family:'Noto Sans JP',sans-serif; font-size:11.5px; color:var(--ink-soft); margin-bottom:7px; line-height:1.4; }
+  .group-row .g-tags{ display:flex; gap:6px; flex-wrap:wrap; }
+  .group-row .g-tag{ font-family:'Poppins',sans-serif; font-size:9.5px; font-weight:600; padding:3px 8px; border-radius:999px; background:var(--card-bg-soft); color:var(--ink-soft); border:1px solid var(--card-border); white-space:nowrap; }
+  .group-row .g-tag.done{ background:rgba(198,150,87,.14); color:var(--accent-gold); border-color:transparent; }
+  .group-row .g-chevron{ flex-shrink:0; opacity:.45; }
+  .group-row .g-chevron svg{ width:16px; height:16px; stroke:var(--ink-soft); }
+
+  /* ============ DECK: META BAR ============ */
+  .meta-bar{ padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+  .meta-bar .meta-left{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .meta-bar .meta-cat{ font-family:'Noto Sans JP',sans-serif; font-weight:700; font-size:12.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .meta-bar .meta-page{ font-family:'Poppins',sans-serif; font-size:10.5px; color:var(--ink-faint); }
+  .meta-bar .meta-right{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; min-width:78px; }
+  .meta-bar .meta-count{ font-family:'Poppins',sans-serif; font-size:11px; font-weight:600; color:var(--ink-soft); white-space:nowrap; }
+  .meta-bar .progress-bar{ width:78px; }
+
+  /* ============ FLASHCARD ============ */
+  .flashcard{ position:relative; perspective:1400px; height:250px; cursor:pointer; margin-bottom:18px; }
+  .exclude-btn{
+    position:absolute; top:-12px; right:-8px; z-index:6;
+    width:34px; height:34px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--card-bg); border:1px solid var(--card-border);
+    box-shadow:var(--shadow-soft); cursor:pointer;
+    transition:var(--transition), transform .2s var(--ease);
+  }
+  .exclude-btn svg{ width:15px; height:15px; stroke:var(--ink-soft); transition:stroke .3s var(--ease); }
+  .exclude-btn:active{ transform:scale(.9); }
+  .exclude-btn.is-excluded{ background: linear-gradient(155deg, var(--accent-gold), var(--accent-sakura-deep)); border-color:transparent; }
+  .exclude-btn.is-excluded svg{ stroke:#fff; }
+  .flashcard.is-excluded .face{ border-color: color-mix(in srgb, var(--accent-gold) 45%, var(--card-border)); }
+  .meta-excluded{ font-family:'Poppins',sans-serif; font-size:9.5px; color:var(--ink-faint); margin-top:3px; text-align:right; }
+  .flashcard-inner{ position:relative; width:100%; height:100%; transition: transform .65s var(--ease); transform-style:preserve-3d; }
+  .flashcard.flipped .flashcard-inner{ transform: rotateY(180deg); }
+  .face{ position:absolute; inset:0; border-radius:var(--radius-xl); backface-visibility:hidden; -webkit-backface-visibility:hidden; padding:18px; display:flex; flex-direction:column; background:var(--card-bg); border:1px solid var(--card-border); box-shadow:var(--shadow-card); transition:var(--transition); overflow:hidden; }
+  .face.back{ transform: rotateY(180deg); }
+
+  .face-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .face-top-left{ display:flex; align-items:center; gap:6px; min-width:0; }
+  .badge{ font-family:'Noto Sans JP',sans-serif; font-size:10px; font-weight:600; padding:5px 10px; border-radius:999px; background: rgba(198,150,87,.14); color:var(--accent-gold); letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px; }
+  .badge.blue{ background:rgba(61,90,120,.12); color:var(--accent-indigo); }
+
+  .learned-badge{ width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, var(--accent-gold), var(--accent-sakura-deep)); opacity:0; transform:scale(.4); transition: opacity .35s var(--ease), transform .35s var(--ease); flex-shrink:0; }
+  .learned-badge svg{ width:11px; height:11px; stroke:#fff; }
+  .flashcard.is-learned .learned-badge{ opacity:1; transform:scale(1); }
+
+  .face-mid{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center; overflow-y:auto; padding:4px 0; }
+  .kana-word{ font-family:'Zen Kaku Gothic New',sans-serif; font-size:30px; font-weight:700; color:var(--ink); line-height:1.25; word-break:keep-all; }
+  .kana-romaji{ font-family:'Poppins',sans-serif; font-size:13px; font-weight:500; color:var(--ink-faint); letter-spacing:.03em; }
+
+  .face-bottom{ display:flex; align-items:center; justify-content:center; gap:6px; flex-shrink:0; }
+  .flip-hint{ font-family:'Noto Sans JP',sans-serif; font-size:10.5px; color:var(--ink-faint); display:flex; align-items:center; gap:5px; }
+  .flip-hint svg{ width:11px; height:11px; stroke:var(--ink-faint); }
+
+  .face.back .face-mid{ gap:8px; }
+  .arti-label{ font-family:'Noto Sans JP',sans-serif; font-size:10.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--accent-sakura-deep); }
+  .arti-text{ font-family:'Poppins',sans-serif; font-weight:700; font-size:19px; color:var(--ink); line-height:1.35; padding:0 4px; }
+
+  /* ============ NAV ROW ============ */
+  .nav-row{ display:grid; grid-template-columns:1fr auto 1fr; gap:var(--gap); align-items:center; }
+  .shuffle-btn{
+    width:52px; height:52px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--card-bg); border:1.5px dashed var(--card-border);
+    box-shadow:var(--shadow-soft); cursor:pointer; flex-shrink:0;
+    transition:var(--transition), transform .25s var(--ease), border-color .3s var(--ease);
+  }
+  .shuffle-btn svg{ width:19px; height:19px; stroke:var(--ink-soft); transition:stroke .3s var(--ease); }
+  .shuffle-btn:active{ transform: scale(.92); }
+  .shuffle-btn.is-active{ background: linear-gradient(155deg, var(--accent-indigo), var(--accent-sakura-deep)); border-style:solid; border-color:transparent; }
+  .shuffle-btn.is-active svg{ stroke:#fff; }
+  .nav-btn{ display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; border-radius:var(--radius-md); font-family:'Noto Sans JP',sans-serif; font-weight:600; font-size:13px; color:var(--ink-soft); cursor:pointer; border:1px solid var(--card-border); background:var(--card-bg); }
+  .nav-btn svg{ width:15px; height:15px; stroke:var(--ink-soft); }
+  .nav-btn[disabled]{ opacity:.4; cursor:not-allowed; }
+  .nav-btn.primary{ background: linear-gradient(135deg, var(--accent-indigo), var(--accent-sakura-deep)); color:#fff; border-color:transparent; }
+  .nav-btn.primary svg{ stroke:#fff; }
+
+  .deck-count{ text-align:center; margin-top:14px; font-family:'Poppins',sans-serif; font-size:11.5px; letter-spacing:.08em; color:var(--ink-faint); }
+
+  /* ============ QUIZ MODE CHOICE ============ */
+  .mode-card{ display:flex; align-items:center; gap:14px; width:100%; text-align:left; background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius-lg); padding:18px 16px; box-shadow:var(--shadow-soft); cursor:pointer; margin-bottom:12px; }
+  .mode-card .m-icon{ width:48px; height:48px; border-radius:15px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background: linear-gradient(155deg, var(--accent-indigo), var(--accent-gold)); }
+  .mode-card .m-icon svg{ width:22px; height:22px; stroke:#fff; }
+  .mode-card.mode-match .m-icon{ background: linear-gradient(155deg, var(--accent-sakura-deep), var(--accent-indigo)); }
+  .mode-card .m-body{ flex:1; min-width:0; }
+  .mode-card .m-title{ font-family:'Noto Sans JP',sans-serif; font-weight:700; font-size:15px; color:var(--ink); margin-bottom:3px; }
+  .mode-card .m-desc{ font-family:'Noto Sans JP',sans-serif; font-size:12px; color:var(--ink-soft); line-height:1.5; }
+  .mode-card .g-chevron{ flex-shrink:0; opacity:.45; }
+  .mode-card .g-chevron svg{ width:16px; height:16px; stroke:var(--ink-soft); }
+
+  /* ============ QUIZ PLAY ============ */
+  .quiz-topline{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:10px; }
+  .quiz-score-pill{ display:flex; gap:6px; flex-shrink:0; }
+  .score-chip{ font-family:'Poppins',sans-serif; font-size:10.5px; font-weight:700; padding:4px 9px; border-radius:999px; white-space:nowrap; }
+  .score-chip.correct{ background: color-mix(in srgb, var(--color-correct) 18%, var(--card-bg)); color:var(--color-correct); }
+  .score-chip.wrong{ background: color-mix(in srgb, var(--color-wrong) 18%, var(--card-bg)); color:var(--color-wrong); }
+  .quiz-progress-label{ display:flex; justify-content:space-between; font-family:'Poppins',sans-serif; font-size:10.5px; font-weight:600; color:var(--ink-faint); margin-bottom:6px; }
+  .quiz-progress{ margin-bottom:16px; }
+  .quiz-progress .progress-bar{ height:6px; }
+
+  /* ============ QUIZ: MULTIPLE CHOICE ============ */
+  .quiz-question{ padding:26px 20px; text-align:center; margin-bottom:16px; }
+  .quiz-question .q-kicker{ font-family:'Poppins',sans-serif; font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:12px; }
+  .quiz-question .q-main{ font-family:'Noto Sans JP',sans-serif; font-size:22px; font-weight:700; color:var(--ink); line-height:1.4; }
+  .quiz-question .q-sub{ font-family:'Poppins',sans-serif; font-size:12px; color:var(--ink-faint); margin-top:5px; }
+
+  .quiz-option{ display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; text-align:left; padding:14px 16px; border-radius:var(--radius-md); background:var(--card-bg); border:1.5px solid var(--card-border); font-family:'Noto Sans JP',sans-serif; font-size:14px; font-weight:600; color:var(--ink); margin-bottom:10px; cursor:pointer; transition:var(--transition), transform .15s var(--ease); }
+  .quiz-option .opt-text-wrap{ min-width:0; }
+  .quiz-option .opt-sub{ display:block; font-family:'Poppins',sans-serif; font-size:10.5px; font-weight:500; color:var(--ink-faint); margin-top:2px; }
+  .quiz-option:active{ transform:scale(.98); }
+  .quiz-option.is-correct{ border-color:var(--color-correct); background: color-mix(in srgb, var(--color-correct) 14%, var(--card-bg)); }
+  .quiz-option.is-wrong{ border-color:var(--color-wrong); background: color-mix(in srgb, var(--color-wrong) 14%, var(--card-bg)); }
+  .quiz-option.is-disabled{ pointer-events:none; opacity:.8; }
+  .opt-check{ display:none; width:22px; height:22px; border-radius:50%; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-option.is-correct .opt-check, .quiz-option.is-wrong .opt-check{ display:flex; }
+  .quiz-option.is-correct .opt-check{ background:var(--color-correct); }
+  .quiz-option.is-wrong .opt-check{ background:var(--color-wrong); }
+  .opt-check svg{ width:12px; height:12px; stroke:#fff; }
+
+  /* ============ QUIZ: MATCHING ============ */
+  .match-round-label{ font-family:'Poppins',sans-serif; font-size:10.5px; font-weight:600; color:var(--ink-faint); text-align:center; margin-bottom:12px; letter-spacing:.06em; }
+  .match-columns{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; }
+  .match-col{ display:flex; flex-direction:column; gap:8px; }
+  .match-tile{ padding:10px 10px; border-radius:12px; background:var(--card-bg); border:1.5px solid var(--card-border); font-family:'Noto Sans JP',sans-serif; font-size:12px; font-weight:600; color:var(--ink); text-align:center; cursor:pointer; transition:var(--transition), transform .15s var(--ease); min-height:46px; display:flex; align-items:center; justify-content:center; line-height:1.35; }
+  .match-tile .mt-sub{ display:block; font-family:'Poppins',sans-serif; font-size:9px; color:var(--ink-faint); font-weight:500; margin-top:2px; }
+  .match-tile:active{ transform:scale(.96); }
+  .match-tile.is-selected{ border-color:var(--accent-indigo); background: color-mix(in srgb, var(--accent-indigo) 16%, var(--card-bg)); }
+  .match-tile.is-correct{ border-color:var(--color-correct); background: color-mix(in srgb, var(--color-correct) 16%, var(--card-bg)); opacity:.55; pointer-events:none; }
+  .match-tile.is-wrong{ border-color:var(--color-wrong); background: color-mix(in srgb, var(--color-wrong) 18%, var(--card-bg)); animation: shakeTile .35s var(--ease); }
+  @keyframes shakeTile{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-4px); } 75%{ transform:translateX(4px); } }
+
+  /* ============ QUIZ RESULT ============ */
+  .result-card{ padding:34px 22px; text-align:center; }
+  .result-card .r-icon{ width:60px; height:60px; border-radius:19px; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; background: linear-gradient(155deg, var(--accent-gold), var(--accent-sakura-deep)); }
+  .result-card .r-icon svg{ width:28px; height:28px; stroke:#fff; }
+  .result-card .r-score{ font-family:'Poppins',sans-serif; font-weight:800; font-size:40px; color:var(--ink); line-height:1; }
+  .result-card .r-label{ font-family:'Noto Sans JP',sans-serif; font-size:13px; color:var(--ink-soft); margin-top:6px; }
+  .result-card .r-detail{ display:flex; justify-content:center; gap:10px; margin-top:16px; }
+  .result-actions{ display:flex; flex-direction:column; gap:10px; margin-top:22px; }
+  .result-actions .nav-btn{ padding:15px; }
+
+  @media (max-width:360px){
+    .kana-word{ font-size:26px; }
+    .flashcard{ height:264px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" data-theme="light" id="app">
+
+  <div class="scenery" aria-hidden="true">
+    <svg viewBox="0 0 400 210" preserveAspectRatio="xMidYMax slice">
+      <circle class="stars" cx="40" cy="30" r="1.4" fill="#f2ecff"/>
+      <circle class="stars" cx="90" cy="55" r="1" fill="#f2ecff"/>
+      <circle class="stars" cx="330" cy="25" r="1.3" fill="#f2ecff"/>
+      <circle class="stars" cx="360" cy="60" r="1" fill="#f2ecff"/>
+      <circle class="stars" cx="200" cy="20" r="1" fill="#f2ecff"/>
+      <circle class="stars" cx="260" cy="45" r="1.2" fill="#f2ecff"/>
+      <circle class="stars" cx="150" cy="40" r="1" fill="#f2ecff"/>
+      <circle class="sun-disc" cx="330" cy="46" r="26" fill="#ffd9a8" opacity="0.9"/>
+      <circle class="moon-disc" cx="330" cy="46" r="20" fill="#efe6c9" opacity="0.95"/>
+      <path class="birds" d="M40,60 q6,-7 12,0 q6,-7 12,0" stroke="#7a6d64" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path class="birds" d="M65,75 q5,-6 10,0 q5,-6 10,0" stroke="#7a6d64" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path class="fuji-body" d="M0,190 L128,55 C136,44 144,44 150,55 L160,40 C166,32 174,32 180,40 L192,58 C198,48 206,48 212,58 L400,190 Z"/>
+      <path class="fuji-snow" d="M126,68 L150,38 L158,52 L167,40 L176,54 L184,42 L198,64 L188,60 L176,68 L167,58 L158,68 L148,60 L138,68 Z"/>
+      <path class="hill" d="M-10,200 C60,175 110,178 180,200 C240,218 300,205 410,200 L410,230 L-10,230 Z"/>
+      <g class="tower-lines" fill="none" stroke-width="2" stroke-linecap="round">
+        <path d="M258,196 L282,72 L306,196"/>
+        <line x1="282" y1="72" x2="282" y2="42"/>
+        <line x1="266" y1="164" x2="298" y2="164"/>
+        <line x1="271" y1="136" x2="293" y2="136"/>
+        <line x1="275" y1="108" x2="289" y2="108"/>
+        <line x1="258" y1="196" x2="298" y2="164"/>
+        <line x1="306" y1="196" x2="266" y2="164"/>
+      </g>
+      <circle class="tower-dot" cx="282" cy="72" r="2"/>
+      <circle class="tower-dot" cx="266" cy="164" r="1.6"/>
+      <circle class="tower-dot" cx="298" cy="164" r="1.6"/>
+      <circle class="tower-dot" cx="275" cy="108" r="1.6"/>
+    </svg>
+    <div class="petals" id="petals"></div>
+  </div>
+
+  <div class="content">
+    <div class="topbar">
+      <div class="brand">
+        <span class="eyebrow">日本語 · KOTOBA FLASHCARDS</span>
+        <span class="title"><span>言葉</span> Flashcards</span>
+        <span class="rule"></span>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema terang/gelap">
+        <span class="icon-static sun"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+        <span class="icon-static moon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></span>
+        <span class="knob"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" id="knobIcon"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+      </button>
+    </div>
+
+    <div id="screen"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ICONS — vector line icons
+   ============================================================ */
+const ICONS = {
+  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
+  wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  car: '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9C2.1 11.2 2 11.6 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>',
+  tool: '<path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 3.26-6.36 6.36a4.5 4.5 0 0 0-1.27 2.12l-1.5 5.64 5.64-1.5a4.5 4.5 0 0 0 2.12-1.27l6.36-6.36a2.83 2.83 0 1 0-4-4Z"/>',
+  box: '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+  star: '<path d="M12 2.5 15 9l7 .9-5 4.9 1.2 7-6.2-3.4L5.8 21.8 7 14.8l-5-4.9L9 9l3-6.5Z"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  chevLeft: '<path d="M15 18l-6-6 6-6"/>',
+  chevRight: '<path d="M9 18l6-6-6-6"/>',
+  speaker: '<path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>',
+  flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 17a2.5 2.5 0 0 0 2.5-2.5c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7.5 7.5 0 1 1-15 0c0-1.153.433-2.294 1-3 1.5-1.5 2-1.5 2-1.5"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.2"/><circle cx="12" cy="12" r="1.3"/>',
+  shuffle: '<path d="M2 18h1.4c1.4 0 2.7-.7 3.4-1.9L11 10M2 6h1.4c1.4 0 2.7.7 3.4 1.9l.4.6"/><path d="M22 18h-1.4c-1.4 0-2.7-.7-3.4-1.9L13 10M22 6h-1.4c-1.4 0-2.7.7-3.4 1.9L13 14"/><path d="M18 14l4 4-4 4M18 2l4 4-4 4"/>',
+  archive: '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><line x1="10" y1="12" x2="14" y2="12"/>',
+  clipboard: '<rect x="7" y="3" width="10" height="4" rx="1"/><path d="M9 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/><path d="M9 12h6M9 16h6"/>',
+  link: '<path d="M9 17H7a5 5 0 0 1 0-10h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>',
+  trophy: '<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 5h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/>',
+  close: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  layers: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>'
+};
+function icon(name){ return ICONS[name] || ''; }
+
+/* ============================================================
+   DATA — 30 Kotoba dalam 1 Set Lengkap (6 Kelompok)
+   ============================================================ */
+function v(kana, arti, romaji){ return { type:'vocab', kana, arti, romaji }; }
+
+const DATA = [
+  {
+    id:'set1', number:1,
+    title:'Koleksi Kotoba Lengkap (30 Kosakata)',
+    desc:'30 kosakata penting: aktivitas, anggota badan, tindakan harian, keterampilan & benda di sekitar.',
+    icon:'book', accent:'accent-gold',
+    groups:[
+      { id:'g1', title:'Aktivitas & Tindakan 1', desc:'Kegiatan berpindah, mandi & transaksi', page:'Kotoba 1–5', kategori:'Kata Kerja', icon:'book', accent:'accent-gold',
+        cards:[
+          v('のりかえます', 'Transit / Pindah kereta', 'norikaemasu'),
+          v('あびます', 'Mandi', 'abimasu'),
+          v('おろします', 'Mengambil', 'oroshimasu'),
+          v('だします', 'Mengeluarkan / Membayar', 'dashimasu'),
+          v('わかい', 'Muda', 'wakai')
+        ]
+      },
+      { id:'g2', title:'Tubuh, Lingkungan & Sifat', desc:'Anggota badan, pemeriksaan & warna alam', page:'Kotoba 6–10', kategori:'Kata Benda & Sifat', icon:'user', accent:'accent-indigo',
+        cards:[
+          v('からだ', 'Tubuh / Badan', 'karada'),
+          v('あたま', 'Kepala', 'atama'),
+          v('かくにん', 'Konfirmasi / Cek', 'kakunin'),
+          v('みどり', 'Hijau / Pepohonan', 'midori'),
+          v('できます', 'Bisa / Mampu', 'dekimasu')
+        ]
+      },
+      { id:'g3', title:'Kegiatan & Hobi', desc:'Mencuci, bernyanyi, musik & mengoleksi', page:'Kotoba 11–15', kategori:'Kata Kerja', icon:'music', accent:'accent-sakura',
+        cards:[
+          v('あらいます', 'Mencuci', 'araimasu'),
+          v('ひきます', 'Bermain [alat musik petik/tuts]', 'hikimasu'),
+          v('うたいます', 'Menyanyi', 'utaimasu'),
+          v('あつめます', 'Mengumpulkan', 'atsumemasu'),
+          v('すてます', 'Membuang', 'sutemasu')
+        ]
+      },
+      { id:'g4', title:'Keterampilan & Rutinitas', desc:'Mengemudi, catatan harian & doa', page:'Kotoba 16–20', kategori:'Kata Kerja & Benda', icon:'car', accent:'accent-gold',
+        cards:[
+          v('かえます', 'Mengubah / Mengganti', 'kaemasu'),
+          v('うんてんします', 'Menyetir / Mengemudi', 'untenshimasu'),
+          v('げんきん', 'Uang tunai', 'genkin'),
+          v('にっき', 'Buku harian', 'nikki'),
+          v('おいのり', 'Doa / Sembahyang', 'oinori')
+        ]
+      },
+      { id:'g5', title:'Tindakan & Ketelitian', desc:'Menyikat, merakit, melipat & menyadari', page:'Kotoba 21–25', kategori:'Kata Kerja & Benda', icon:'tool', accent:'accent-indigo',
+        cards:[
+          v('みがきます', 'Menggosok [gigi]', 'migakimasu'),
+          v('くみたてます', 'Merakit / Menyusun', 'kumitatemasu'),
+          v('おります', 'Melipat / Mematahkan', 'orimasu'),
+          v('きがつきます', 'Menyadari / Memperhatikan', 'ki ga tsukimasu'),
+          v('しょうゆ', 'Kecap asin', 'shouyu')
+        ]
+      },
+      { id:'g6', title:'Benda, Garis & Posisi', desc:'Diagram, menyelipkan, menaruh & cakupan luas', page:'Kotoba 26–30', kategori:'Kata Benda & Kerja', icon:'box', accent:'accent-sakura',
+        cards:[
+          v('せん', 'Garis', 'sen'),
+          v('ず', 'Gambar / Diagram', 'zu'),
+          v('さしこみます', 'Memasukkan / Menyelipkan', 'sashikomimasu'),
+          v('のせます', 'Memuat / Menaruh di atas', 'nosemasu'),
+          v('こくさい', 'Internasional', 'kokusai')
+        ]
+      }
+    ]
+  }
+];
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+const STORE = { theme:'waFlashcards.theme', learned:'waFlashcards.learnedIds', excluded:'waFlashcards.excludedIds', streak:'waFlashcards.streakCount', lastVisit:'waFlashcards.lastVisit' };
+function safeGet(key, fallback){ try{ const raw = localStorage.getItem(key); return raw === null ? fallback : JSON.parse(raw); } catch(e){ return fallback; } }
+function safeSet(key, value){ try{ localStorage.setItem(key, JSON.stringify(value)); } catch(e){ console.warn('Local storage gagal menyimpan', e); } }
+
+let learnedSet = new Set(safeGet(STORE.learned, []));
+function saveLearned(){ safeSet(STORE.learned, Array.from(learnedSet)); }
+let excludedSet = new Set(safeGet(STORE.excluded, []));
+function saveExcluded(){ safeSet(STORE.excluded, Array.from(excludedSet)); }
+function cardUid(groupId, idx){ return groupId + '#' + idx; }
+
+function totalCardsInGroup(g){ return g.cards.length; }
+function learnedCountInGroup(g){ let n=0; g.cards.forEach((c,i)=>{ if(learnedSet.has(cardUid(g.id,i))) n++; }); return n; }
+function totalCardsInBab(bab){ return bab.groups.reduce((s,g)=>s+totalCardsInGroup(g),0); }
+function learnedCountInBab(bab){ return bab.groups.reduce((s,g)=>s+learnedCountInGroup(g),0); }
+function totalCardsAll(){ return DATA.reduce((s,b)=>s+totalCardsInBab(b),0); }
+function learnedCountAll(){ return DATA.reduce((s,b)=>s+learnedCountInBab(b),0); }
+
+function speakKana(text){
+  if('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const ut = new SpeechSynthesisUtterance(text);
+    ut.lang = 'ja-JP';
+    ut.rate = 0.85;
+    window.speechSynthesis.speak(ut);
+  }
+}
+
+/* ============================================================
+   QUIZ LOGIC
+   ============================================================ */
+function shuffleArray(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function collectPool(groupFilter){
+  let pool = [];
+  const set = DATA[0];
+  set.groups.forEach(g=>{
+    if(!groupFilter || groupFilter.includes(g.id)){
+      g.cards.forEach(card=>{ pool.push({ card, groupId:g.id, babId:set.id }); });
+    }
+  });
+  return pool;
+}
+
+function quizPair(card){
+  return { jp: card.kana, jpSub: card.romaji, id: card.arti };
+}
+
+function pickDistractors(pool, target, count){
+  const sameGroup = pool.filter(p => p.groupId === target.groupId && p.card !== target.card);
+  let candidates = shuffleArray(sameGroup).slice(0, count);
+  if(candidates.length < count){
+    const chosenCards = new Set(candidates.map(c=>c.card));
+    const rest = pool.filter(p => p.card !== target.card && !chosenCards.has(p.card));
+    const need = count - candidates.length;
+    candidates = candidates.concat(shuffleArray(rest).slice(0, need));
+  }
+  return candidates;
+}
+
+const SCOPES = {
+  semua: { label:'Semua Kotoba (30 Kartu)', desc:'Seluruh 30 kosakata kotoba dari 6 kelompok', icon:'layers', accent:'accent-gold',   build:()=>collectPool(null) },
+  bag1:  { label:'Bagian 1 (No. 1–15)',     desc:'15 kotoba: aktivitas, tubuh, dan hobi',     icon:'book',   accent:'accent-indigo', build:()=>collectPool(['g1','g2','g3']) },
+  bag2:  { label:'Bagian 2 (No. 16–30)',    desc:'15 kotoba: keterampilan, aksi & benda',     icon:'wrench', accent:'accent-sakura', build:()=>collectPool(['g4','g5','g6']) }
+};
+const SCOPE_ORDER = ['semua','bag1','bag2'];
+
+function buildMCQuestions(scopeKey){
+  const pool = SCOPES[scopeKey].build();
+  let questions = [];
+  pool.forEach(item=>{
+    ['jp2id','id2jp'].forEach(direction=>{
+      const distractors = pickDistractors(pool, item, 3);
+      const optionItems = shuffleArray([item, ...distractors]);
+      const options = optionItems.map(o=>{
+        const p = quizPair(o.card);
+        return { text: direction==='jp2id' ? p.id : p.jp, sub: direction==='id2jp' ? p.jpSub : null, correct: o.card === item.card };
+      });
+      const pair = quizPair(item.card);
+      questions.push({
+        direction, item, options,
+        promptMain: direction==='jp2id' ? pair.jp : pair.id,
+        promptSub: direction==='jp2id' ? pair.jpSub : null
+      });
+    });
+  });
+  return shuffleArray(questions);
+}
+
+function buildMatchingRounds(scopeKey, roundSize){
+  const pool = shuffleArray(SCOPES[scopeKey].build());
+  const rounds = [];
+  for(let i=0;i<pool.length;i+=roundSize) rounds.push(pool.slice(i, i+roundSize));
+  return rounds;
+}
+
+/* ============================================================
+   NAVIGATION & APP STATE
+   ============================================================ */
+const state = { screen:'home', babId:null, groupId:null, cardIndex:0, order:null, shuffled:false, quiz:null };
+const screenEl = document.getElementById('screen');
+
+function findBab(id){ return DATA.find(b=>b.id===id); }
+function findGroup(bab, id){ return bab.groups.find(g=>g.id===id); }
+
+function goHome(){ state.screen='home'; state.babId=null; state.groupId=null; render(); }
+function goChapter(babId){ state.screen='chapter'; state.babId=babId; state.groupId=null; render(); }
+function goDeck(babId, groupId){
+  state.screen='deck'; state.babId=babId; state.groupId=groupId; state.cardIndex=0; state.shuffled=false;
+  const bab = findBab(babId); const g = findGroup(bab, groupId);
+  state.order = g.cards.map((_,i)=>i);
+  render();
+}
+
+function goTestHub(){ state.screen='test-hub'; render(); }
+function goQuizMode(scopeKey){ state.screen='quiz-mode'; state.pendingScope = scopeKey; render(); }
+
+function startMCQuiz(scopeKey){
+  state.quiz = { mode:'mc', scopeKey, questions:buildMCQuestions(scopeKey), index:0, correct:0, wrong:0, answered:false };
+  state.screen = 'quiz-play';
+  render();
+}
+function startMatchQuiz(scopeKey){
+  const rounds = buildMatchingRounds(scopeKey, 5);
+  state.quiz = { mode:'match', scopeKey, rounds, roundIndex:0, leftOrder:null, rightOrder:null, matched:new Set(), selected:null, mistakes:0, roundsCleared:0 };
+  setupMatchRound();
+  state.screen = 'quiz-play';
+  render();
+}
+function setupMatchRound(){
+  const q = state.quiz;
+  const round = q.rounds[q.roundIndex];
+  q.leftOrder = shuffleArray(round.map((_,i)=>i));
+  q.rightOrder = shuffleArray(round.map((_,i)=>i));
+  q.matched = new Set();
+  q.selected = null;
+}
+function exitQuiz(){
+  if(state.quiz && !state.quiz.finished){
+    const ok = confirm('Yakin ingin mengakhiri latihan? Skor belum tersimpan.');
+    if(!ok) return;
+  }
+  state.quiz = null;
+  state.screen = 'test-hub';
+  render();
+}
+
+/* ============================================================
+   RENDER SCREENS
+   ============================================================ */
+function renderHome(){
+  const streak = safeGet(STORE.streak, 1);
+  const learned = learnedCountAll();
+  const total = totalCardsAll();
+  const bab = DATA[0];
+  const t = totalCardsInBab(bab);
+  const l = learnedCountInBab(bab);
+  const pct = t ? Math.round((l/t)*100) : 0;
+
+  screenEl.innerHTML = `
+    <div class="screen-inner">
+      <div class="bento-grid">
+        <div class="bento stat-tile">
+          <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('flame')}</svg></div>
+          <div class="num">${streak}<span class="unit">hari</span></div>
+          <div class="cap">Hari Beruntun Belajar</div>
+        </div>
+        <div class="bento stat-tile learned">
+          <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('target')}</svg></div>
+          <div class="num">${learned}<span class="unit">/ ${total}</span></div>
+          <div class="cap">Kartu Dipelajari</div>
+        </div>
+      </div>
+
+      <div class="section-label">Materi Flashcard</div>
+      <button class="bento bab-tile ${bab.accent}" data-open-chapter="${bab.id}">
+        <span class="glow"></span>
+        <span class="emblem"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon(bab.icon)}</svg></span>
+        <span class="eyebrow">SET KOTOBA</span>
+        <div class="bab-title">${bab.title}</div>
+        <div class="bab-desc">${bab.desc}</div>
+        <div class="bab-meta">
+          <div><div class="meta-num">${bab.groups.length}</div><div class="meta-label">Kelompok</div></div>
+          <div><div class="meta-num">${t}</div><div class="meta-label">Total kartu</div></div>
+          <div><div class="meta-num">${pct}%</div><div class="meta-label">Dipelajari</div></div>
+        </div>
+        <div class="bab-progress">
+          <div class="progress-bar"><span style="width:${pct}%"></span></div>
+        </div>
+      </button>
+
+      <div class="section-label">Latihan &amp; Tes</div>
+      <button class="bento bab-tile test-cta" id="openTestHub">
+        <span class="glow"></span>
+        <span class="emblem"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('clipboard')}</svg></span>
+        <span class="eyebrow">UJI PEMAHAMAN</span>
+        <div class="bab-title">Mulai Latihan Soal</div>
+        <div class="bab-desc">Pilihan ganda &amp; mencocokkan kata Jepang ↔ Indonesia untuk 30 kosakata.</div>
+        <div class="bab-meta">
+          <div><div class="meta-num">3</div><div class="meta-label">Cakupan latihan</div></div>
+          <div><div class="meta-num">2</div><div class="meta-label">Metode kuis</div></div>
+        </div>
+      </button>
+
+      <button class="reset-link" id="resetProgress" type="button">Setel ulang progres belajar</button>
+    </div>`;
+}
+
+function renderChapter(babId){
+  const bab = findBab(babId);
+  let rows = '';
+  bab.groups.forEach(g=>{
+    const l = learnedCountInGroup(g);
+    const t = totalCardsInGroup(g);
+    const done = l === t && t > 0;
+    rows += `
+      <button class="group-row ${g.accent}" data-open-deck="${g.id}">
+        <span class="g-icon ${g.accent}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon(g.icon)}</svg></span>
+        <span class="g-body">
+          <span class="g-title">${g.title}</span>
+          <span class="g-desc">${g.desc}</span>
+          <span class="g-tags">
+            <span class="g-tag">${g.page}</span>
+            <span class="g-tag">${t} kartu</span>
+            <span class="g-tag ${done ? 'done' : ''}">${l}/${t} dipelajari</span>
+          </span>
+        </span>
+        <span class="g-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevRight')}</svg></span>
+      </button>`;
+  });
+
+  screenEl.innerHTML = `
+    <div class="screen-inner">
+      <div class="back-row">
+        <button class="back-btn" id="backHome"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevLeft')}</svg></button>
+        <div class="crumb">
+          <span class="eyebrow">Koleksi Kotoba</span>
+          <span class="crumb-title">Pilih Kelompok Kosakata</span>
+        </div>
+      </div>
+      <div class="section-label">6 Kelompok Kotoba</div>
+      ${rows}
+    </div>`;
+}
+
+function renderTestHub(){
+  let rows = '';
+  SCOPE_ORDER.forEach(key=>{
+    const scope = SCOPES[key];
+    const total = scope.build().length;
+    rows += `
+      <button class="group-row ${scope.accent}" data-open-quiz-mode="${key}">
+        <span class="g-icon ${scope.accent}"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon(scope.icon)}</svg></span>
+        <span class="g-body">
+          <span class="g-title">${scope.label}</span>
+          <span class="g-desc">${scope.desc}</span>
+          <span class="g-tags"><span class="g-tag">${total} kartu</span></span>
+        </span>
+        <span class="g-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevRight')}</svg></span>
+      </button>`;
+  });
+
+  screenEl.innerHTML = `
+    <div class="screen-inner">
+      <div class="back-row">
+        <button class="back-btn" id="backHome"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevLeft')}</svg></button>
+        <div class="crumb">
+          <span class="eyebrow">Latihan &amp; Tes</span>
+          <span class="crumb-title">Pilih Cakupan Soal</span>
+        </div>
+      </div>
+
+      <div class="section-label">Cakupan Latihan</div>
+      ${rows}
+    </div>`;
+}
+
+function renderQuizMode(){
+  const scope = SCOPES[state.pendingScope];
+  screenEl.innerHTML = `
+    <div class="screen-inner">
+      <div class="back-row">
+        <button class="back-btn" id="backTestHub"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevLeft')}</svg></button>
+        <div class="crumb">
+          <span class="eyebrow">Latihan &amp; Tes</span>
+          <span class="crumb-title">${scope.label}</span>
+        </div>
+      </div>
+
+      <div class="section-label">Pilih Metode Latihan</div>
+      <button class="mode-card" data-start-mc="${state.pendingScope}">
+        <span class="m-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('target')}</svg></span>
+        <span class="m-body">
+          <span class="m-title">Pilihan Ganda</span>
+          <span class="m-desc">Soal bolak-balik Jepang→Indonesia &amp; Indonesia→Jepang, 4 pilihan jawaban</span>
+        </span>
+        <span class="g-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevRight')}</svg></span>
+      </button>
+      <button class="mode-card mode-match" data-start-match="${state.pendingScope}">
+        <span class="m-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('link')}</svg></span>
+        <span class="m-body">
+          <span class="m-title">Pasangan Jawaban</span>
+          <span class="m-desc">Cocokkan kata Jepang dengan artinya secara langsung</span>
+        </span>
+        <span class="g-chevron"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevRight')}</svg></span>
+      </button>
+    </div>`;
+}
+
+function renderCardFace(card){
+  const romajiHtml = card.romaji ? `<span class="kana-romaji">${card.romaji}</span>` : '';
+  const front = `
+    <div class="face-top">
+      <div class="face-top-left"><span class="badge">${state.currentKategori}</span><span class="learned-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${icon('check')}</svg></span></div>
+      <button class="sound-btn" type="button" aria-label="Dengarkan pengucapan" style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card-bg-soft);border:1px solid var(--card-border);cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;stroke:var(--ink-soft);">${icon('speaker')}</svg></button>
+    </div>
+    <div class="face-mid"><span class="kana-word">${card.kana}</span>${romajiHtml}</div>
+    <div class="face-bottom"><span class="flip-hint"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>Ketuk untuk lihat arti</span></div>`;
+  const back = `
+    <div class="face-top">
+      <span class="badge blue">${card.kana}${card.romaji ? ` · ${card.romaji}` : ''}</span>
+      <button class="sound-btn" type="button" aria-label="Dengarkan pengucapan" style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card-bg-soft);border:1px solid var(--card-border);cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;stroke:var(--ink-soft);">${icon('speaker')}</svg></button>
+    </div>
+    <div class="face-mid"><span class="arti-label">Arti</span><span class="arti-text">${card.arti}</span></div>
+    <div class="face-bottom"><span class="flip-hint"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>Ketuk untuk kembali</span></div>`;
+  return { front, back };
+}
+
+function renderDeck(babId, groupId){
+  const bab = findBab(babId);
+  const g = findGroup(bab, groupId);
+  if(!state.order) state.order = g.cards.map((_,i)=>i);
+  const idx = state.cardIndex;
+  const actualIdx = state.order[idx];
+  const card = g.cards[actualIdx];
+  state.currentKategori = g.kategori;
+  const uid = cardUid(g.id, actualIdx);
+  const isLearned = learnedSet.has(uid);
+  const isExcluded = excludedSet.has(uid);
+  const learnedCount = learnedCountInGroup(g);
+  const groupTotal = g.cards.length;
+  const excludedCount = g.cards.reduce((n,_,i)=> n + (excludedSet.has(cardUid(g.id,i)) ? 1 : 0), 0);
+  const total = state.order.length;
+  const faces = renderCardFace(card);
+
+  screenEl.innerHTML = `
+    <div class="screen-inner">
+      <div class="back-row">
+        <button class="back-btn" id="backChapter"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevLeft')}</svg></button>
+        <div class="crumb">
+          <span class="eyebrow">Koleksi Kotoba &rsaquo; ${g.kategori}</span>
+          <span class="crumb-title">${g.title}</span>
+        </div>
+      </div>
+
+      <div class="bento meta-bar">
+        <div class="meta-left">
+          <span class="meta-cat">${g.kategori}</span>
+          <span class="meta-page">${g.page}</span>
+        </div>
+        <div class="meta-right">
+          <span class="meta-count">${learnedCount} / ${groupTotal} dipelajari</span>
+          <div class="progress-bar"><span style="width:${groupTotal ? (learnedCount/groupTotal)*100 : 0}%"></span></div>
+          ${excludedCount > 0 ? `<span class="meta-excluded">${excludedCount} kartu disisihkan dari acak</span>` : ''}
+        </div>
+      </div>
+
+      <div class="flashcard ${isLearned ? 'is-learned' : ''} ${isExcluded ? 'is-excluded' : ''}" id="activeCard">
+        <button class="exclude-btn ${isExcluded ? 'is-excluded' : ''}" id="excludeCard" title="${isExcluded ? 'Sudah dikecualikan — ketuk untuk sertakan lagi saat diacak' : 'Tandai sudah hafal (kecualikan dari acak)'}">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon(isExcluded ? 'check' : 'archive')}</svg>
+        </button>
+        <div class="flashcard-inner">
+          <div class="face front">${faces.front}</div>
+          <div class="face back">${faces.back}</div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="nav-btn" id="prevCard" ${idx===0?'disabled':''}><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevLeft')}</svg>Sebelumnya</button>
+        <button class="shuffle-btn ${state.shuffled ? 'is-active' : ''}" id="shuffleDeck" title="Acak urutan kartu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('shuffle')}</svg></button>
+        <button class="nav-btn primary" id="nextCard" ${idx===total-1?'disabled':''}>Selanjutnya<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevRight')}</svg></button>
+      </div>
+      <div class="deck-count">KARTU ${idx+1} DARI ${total}${state.shuffled ? ' · TERACAK' : ''}</div>
+    </div>`;
+}
+
+/* ============================================================
+   RENDER: QUIZ PLAY
+   ============================================================ */
+function renderQuizPlay(){
+  if(state.quiz.mode === 'mc') renderQuizMC();
+  else if(state.quiz.mode === 'match') renderQuizMatch();
+}
+
+function quizHeaderHtml(title, sub){
+  const q = state.quiz;
+  return `
+    <div class="back-row">
+      <button class="back-btn" id="exitQuiz"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('close')}</svg></button>
+      <div class="crumb">
+        <span class="eyebrow">${sub}</span>
+        <span class="crumb-title">${title}</span>
+      </div>
+      <div class="quiz-score-pill">
+        <span class="score-chip correct">${q.correct !== undefined ? q.correct : (q.rounds ? q.roundsCleared : 0)}</span>
+        <span class="score-chip wrong">${q.wrong !== undefined ? q.wrong : q.mistakes}</span>
+      </div>
+    </div>`;
+}
+
+function renderQuizMC(){
+  const q = state.quiz;
+  if(q.index >= q.questions.length){ renderQuizResult(); return; }
+  const question = q.questions[q.index];
+  const scope = SCOPES[q.scopeKey];
+  const directionLabel = question.direction === 'jp2id' ? 'Jepang → Indonesia' : 'Indonesia → Jepang';
+
+  const optionsHtml = question.options.map((opt,i)=>`
+    <button class="quiz-option" data-mc-option="${i}">
+      <span class="opt-text-wrap"><span>${opt.text}</span>${opt.sub ? `<span class="opt-sub">${opt.sub}</span>` : ''}</span>
+      <span class="opt-check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${icon('check')}</svg></span>
+    </button>`).join('');
+
+  screenEl.innerHTML = `
+    <div class="screen-inner">
+      ${quizHeaderHtml(scope.label, `Pilihan Ganda · ${directionLabel}`)}
+      <div class="quiz-progress">
+        <div class="quiz-progress-label"><span>SOAL ${q.index+1} DARI ${q.questions.length}</span></div>
+        <div class="progress-bar"><span style="width:${(q.index/q.questions.length)*100}%"></span></div>
+      </div>
+      <div class="bento quiz-question">
+        <span class="q-kicker">${question.direction==='jp2id' ? 'Apa artinya?' : 'Bahasa Jepangnya apa?'}</span>
+        <div class="q-main">${question.promptMain}</div>
+        ${question.promptSub ? `<div class="q-sub">${question.promptSub}</div>` : ''}
+      </div>
+      <div id="quizOptions">${optionsHtml}</div>
+    </div>`;
+}
+
+function renderQuizMatch(){
+  const q = state.quiz;
+  const round = q.rounds[q.roundIndex];
+  const scope = SCOPES[q.scopeKey];
+
+  function tileClass(side, i){
+    if(q.matched.has(i)) return 'is-correct';
+    if(q.selected && q.selected.side===side && q.selected.idx===i) return 'is-selected';
+    if(q.wrongFlash && ((q.wrongFlash.a.side===side && q.wrongFlash.a.idx===i) || (q.wrongFlash.b.side===side && q.wrongFlash.b.idx===i))) return 'is-wrong';
+    return '';
+  }
+
+  const leftHtml = q.leftOrder.map(i=>{
+    const item = round[i];
+    const pair = quizPair(item.card);
+    const isMatched = q.matched.has(i);
+    return `<button class="match-tile ${tileClass('left',i)}" data-match-side="left" data-match-idx="${i}" ${isMatched?'disabled':''}>${pair.jp}${pair.jpSub?`<span class="mt-sub">${pair.jpSub}</span>`:''}</button>`;
+  }).join('');
+
+  const rightHtml = q.rightOrder.map(i=>{
+    const item = round[i];
+    const pair = quizPair(item.card);
+    const isMatched = q.matched.has(i);
+    return `<button class="match-tile ${tileClass('right',i)}" data-match-side="right" data-match-idx="${i}" ${isMatched?'disabled':''}>${pair.id}</button>`;
+  }).join('');
+
+  screenEl.innerHTML = `
+    <div class="screen-inner">
+      ${quizHeaderHtml(scope.label, 'Pasangan Jawaban')}
+      <div class="quiz-progress">
+        <div class="quiz-progress-label"><span>RONDE ${q.roundIndex+1} DARI ${q.rounds.length}</span></div>
+        <div class="progress-bar"><span style="width:${(q.roundIndex/q.rounds.length)*100}%"></span></div>
+      </div>
+      <div class="match-round-label">Ketuk kata Jepang, lalu ketuk artinya yang cocok</div>
+      <div class="match-columns">
+        <div class="match-col">${leftHtml}</div>
+        <div class="match-col">${rightHtml}</div>
+      </div>
+    </div>`;
+}
+
+function renderQuizResult(){
+  const q = state.quiz;
+  q.finished = true;
+  let scoreBig, scoreLabel, detail;
+  if(q.mode === 'match'){
+    scoreBig = q.rounds.length;
+    scoreLabel = 'Ronde Selesai';
+    detail = `<span class="score-chip wrong">${q.mistakes} kali salah</span>`;
+  } else {
+    const total = q.questions.length;
+    const pct = total ? Math.round((q.correct/total)*100) : 0;
+    scoreBig = pct + '%';
+    scoreLabel = `${q.correct} benar dari ${total} soal`;
+    detail = `<span class="score-chip correct">${q.correct} benar</span><span class="score-chip wrong">${q.wrong} salah</span>`;
+  }
+
+  screenEl.innerHTML = `
+    <div class="screen-inner">
+      <div class="bento result-card">
+        <div class="r-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('trophy')}</svg></div>
+        <div class="r-score">${scoreBig}</div>
+        <div class="r-label">${scoreLabel}</div>
+        <div class="r-detail">${detail}</div>
+      </div>
+      <div class="result-actions">
+        <button class="nav-btn primary" id="retryQuiz">Coba Lagi (Acak Baru)</button>
+        <button class="nav-btn" id="backTestHubFromResult">Kembali ke Menu Latihan</button>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   MASTER RENDER & EVENT HANDLER
+   ============================================================ */
+function render(){
+  if(state.screen === 'home') renderHome();
+  else if(state.screen === 'chapter') renderChapter(state.babId);
+  else if(state.screen === 'deck') renderDeck(state.babId, state.groupId);
+  else if(state.screen === 'test-hub') renderTestHub();
+  else if(state.screen === 'quiz-mode') renderQuizMode();
+  else if(state.screen === 'quiz-play') renderQuizPlay();
+}
+
+screenEl.addEventListener('click', (e)=>{
+  const openChapter = e.target.closest('[data-open-chapter]');
+  if(openChapter){ goChapter(openChapter.getAttribute('data-open-chapter')); return; }
+
+  const openDeck = e.target.closest('[data-open-deck]');
+  if(openDeck){ goDeck(state.babId, openDeck.getAttribute('data-open-deck')); return; }
+
+  const openQuizMode = e.target.closest('[data-open-quiz-mode]');
+  if(openQuizMode){ goQuizMode(openQuizMode.getAttribute('data-open-quiz-mode')); return; }
+
+  if(e.target.closest('#openTestHub')){ goTestHub(); return; }
+  if(e.target.closest('#backTestHub')){ goTestHub(); return; }
+  if(e.target.closest('#backTestHubFromResult')){ goTestHub(); return; }
+  if(e.target.closest('#exitQuiz')){ exitQuiz(); return; }
+
+  const startMc = e.target.closest('[data-start-mc]');
+  if(startMc){ startMCQuiz(startMc.getAttribute('data-start-mc')); return; }
+
+  const startMatch = e.target.closest('[data-start-match]');
+  if(startMatch){ startMatchQuiz(startMatch.getAttribute('data-start-match')); return; }
+
+  if(e.target.closest('#retryQuiz')){
+    const q = state.quiz;
+    if(q.mode === 'mc') startMCQuiz(q.scopeKey);
+    else if(q.mode === 'match') startMatchQuiz(q.scopeKey);
+    return;
+  }
+
+  const mcOpt = e.target.closest('[data-mc-option]');
+  if(mcOpt){
+    const q = state.quiz;
+    if(q.answered) return;
+    q.answered = true;
+    const optIdx = parseInt(mcOpt.getAttribute('data-mc-option'), 10);
+    const question = q.questions[q.index];
+    const chosen = question.options[optIdx];
+    screenEl.querySelectorAll('[data-mc-option]').forEach((btn,i)=>{
+      btn.classList.add('is-disabled');
+      if(question.options[i].correct) btn.classList.add('is-correct');
+      else if(i === optIdx) btn.classList.add('is-wrong');
+    });
+    if(chosen.correct) q.correct++; else q.wrong++;
+    setTimeout(()=>{ q.index++; q.answered = false; renderQuizPlay(); }, 900);
+    return;
+  }
+
+  const matchTile = e.target.closest('[data-match-side]');
+  if(matchTile && !matchTile.disabled){
+    const q = state.quiz;
+    if(q.wrongFlash) return;
+    const side = matchTile.getAttribute('data-match-side');
+    const idx = parseInt(matchTile.getAttribute('data-match-idx'), 10);
+
+    if(!q.selected){ q.selected = {side, idx}; renderQuizMatch(); return; }
+    if(q.selected.side === side){ q.selected = {side, idx}; renderQuizMatch(); return; }
+
+    const prevSelected = q.selected;
+    if(prevSelected.idx === idx){
+      q.matched.add(idx);
+      q.selected = null;
+      renderQuizMatch();
+      const round = q.rounds[q.roundIndex];
+      if(q.matched.size === round.length){
+        setTimeout(()=>{
+          q.roundIndex++;
+          q.roundsCleared = q.roundIndex;
+          if(q.roundIndex >= q.rounds.length){ renderQuizResult(); }
+          else { setupMatchRound(); renderQuizPlay(); }
+        }, 500);
+      }
+    } else {
+      q.mistakes++;
+      q.wrongFlash = { a: prevSelected, b: {side, idx} };
+      q.selected = null;
+      renderQuizMatch();
+      setTimeout(()=>{ q.wrongFlash = null; renderQuizMatch(); }, 500);
+    }
+    return;
+  }
+
+  if(e.target.closest('#backHome')){ goHome(); return; }
+  if(e.target.closest('#backChapter')){ goChapter(state.babId); return; }
+
+  if(e.target.closest('#shuffleDeck')){
+    const bab = findBab(state.babId); const g = findGroup(bab, state.groupId);
+    let pool = g.cards.map((_,i)=>i).filter(i => !excludedSet.has(cardUid(g.id, i)));
+    if(pool.length === 0) pool = g.cards.map((_,i)=>i);
+    state.order = shuffleArray(pool);
+    state.cardIndex = 0;
+    state.shuffled = true;
+    renderDeck(state.babId, state.groupId);
+    return;
+  }
+
+  if(e.target.closest('#resetProgress')){
+    if(confirm('Setel ulang seluruh progres belajar dan kartu yang dipelajari?')){
+      Object.values(STORE).forEach(key=>localStorage.removeItem(key));
+      location.reload();
+    }
+    return;
+  }
+
+  const prevBtn = e.target.closest('#prevCard');
+  if(prevBtn && !prevBtn.disabled){ state.cardIndex = Math.max(0, state.cardIndex-1); renderDeck(state.babId, state.groupId); return; }
+
+  const nextBtn = e.target.closest('#nextCard');
+  if(nextBtn && !nextBtn.disabled){
+    state.cardIndex = Math.min(state.order.length-1, state.cardIndex+1);
+    renderDeck(state.babId, state.groupId);
+    return;
+  }
+
+  const soundBtn = e.target.closest('.sound-btn');
+  if(soundBtn){
+    const bab = findBab(state.babId); const g = findGroup(bab, state.groupId);
+    const actualIdx = state.order[state.cardIndex];
+    const card = g.cards[actualIdx];
+    speakKana(card.kana);
+    return;
+  }
+
+  const exBtn = e.target.closest('#excludeCard');
+  if(exBtn){
+    const bab = findBab(state.babId); const g = findGroup(bab, state.groupId);
+    const actualIdx = state.order[state.cardIndex];
+    const uid = cardUid(g.id, actualIdx);
+    if(excludedSet.has(uid)) excludedSet.delete(uid); else excludedSet.add(uid);
+    saveExcluded();
+    renderDeck(state.babId, state.groupId);
+    return;
+  }
+
+  const cardEl = e.target.closest('#activeCard');
+  if(cardEl){
+    cardEl.classList.toggle('flipped');
+    const bab = findBab(state.babId); const g = findGroup(bab, state.groupId);
+    const actualIdx = state.order[state.cardIndex];
+    const uid = cardUid(g.id, actualIdx);
+    if(cardEl.classList.contains('flipped') && !learnedSet.has(uid)){
+      learnedSet.add(uid);
+      cardEl.classList.add('is-learned');
+      saveLearned();
+    }
+    return;
+  }
+});
+
+/* ============================================================
+   THEME
+   ============================================================ */
+const app = document.getElementById('app');
+const toggle = document.getElementById('themeToggle');
+const knobIcon = document.getElementById('knobIcon');
+const sunPath = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+const moonPath = '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>';
+function applyTheme(theme){ app.setAttribute('data-theme', theme); knobIcon.innerHTML = theme==='dark' ? moonPath : sunPath; }
+applyTheme(safeGet(STORE.theme, 'light'));
+toggle.addEventListener('click', ()=>{ const next = app.getAttribute('data-theme')==='dark' ? 'light':'dark'; applyTheme(next); safeSet(STORE.theme, next); });
+
+/* ============================================================
+   STREAK
+   ============================================================ */
+(function updateStreak(){
+  const todayKey = new Date().toDateString();
+  const lastVisit = safeGet(STORE.lastVisit, null);
+  let streak = safeGet(STORE.streak, 0);
+  if(lastVisit !== todayKey){
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+    streak = (lastVisit === yesterday.toDateString()) ? streak+1 : 1;
+    safeSet(STORE.streak, streak); safeSet(STORE.lastVisit, todayKey);
+  } else if(!streak){
+    streak = 1; safeSet(STORE.streak, streak); safeSet(STORE.lastVisit, todayKey);
+  }
+})();
+
+/* ============================================================
+   PETALS ANIMATION
+   ============================================================ */
+const petalHost = document.getElementById('petals');
+for(let i=0;i<10;i++){
+  const p = document.createElement('div'); p.className='petal';
+  p.style.left = (Math.random()*100)+'%';
+  const size = 6+Math.random()*6;
+  p.style.width = size+'px'; p.style.height = size+'px';
+  p.style.setProperty('--drift', (Math.random()*60-30)+'px');
+  p.style.animationDuration = (7+Math.random()*6)+'s';
+  p.style.animationDelay = (Math.random()*-12)+'s';
+  petalHost.appendChild(p);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+render();
+</script>
+</body>
+</html>
