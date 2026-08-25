@@ -49,7 +49,6 @@
     --fuji-snow: #ffffff;
     --hill-fill: #cdd9c9;
     --tower-color: #9fb0c9;
-    --tower-glow: transparent;
     --shadow-soft: 0 14px 34px rgba(70,45,40,0.10);
     --shadow-card: 0 18px 40px rgba(70,45,40,0.14);
     --color-correct: #4f9d6e;
@@ -75,7 +74,6 @@
     --fuji-snow: #3a3c66;
     --hill-fill: #191a30;
     --tower-color: #cba15f;
-    --tower-glow: #ffd98a;
     --shadow-soft: 0 14px 34px rgba(0,0,0,0.45);
     --shadow-card: 0 18px 44px rgba(0,0,0,0.55);
     --color-correct: #7fd9a0;
@@ -106,21 +104,44 @@
   .petal{ position:absolute; top:-10%; width:9px; height:9px; background:var(--accent-sakura); border-radius:0 100% 0 100%; opacity:.7; animation: fall linear infinite; transition: background .5s var(--ease); }
   @keyframes fall{ 0%{ transform: translate(0,0) rotate(0deg);} 100%{ transform: translate(var(--drift,30px), 320px) rotate(340deg);} }
 
-  /* ============ TOPBAR ============ */
+  /* ============ TOPBAR & LIVE COUNTER ============ */
   .content{ position:relative; z-index:2; padding: 18px 16px 34px; }
-  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; gap:8px; }
   .brand{ display:flex; flex-direction:column; gap:2px; }
   .brand .eyebrow{ font-family:'Noto Sans JP',sans-serif; font-size:11px; letter-spacing:.14em; font-weight:600; color:var(--ink-soft); text-transform:uppercase; }
   .brand .title{ display:flex; align-items:baseline; gap:8px; font-family:'Zen Kaku Gothic New','Poppins',sans-serif; font-weight:900; font-size:22px; color:var(--ink); }
   .brand .rule{ width:34px; height:3px; border-radius:2px; margin-top:4px; background: linear-gradient(90deg, var(--accent-gold), var(--accent-sakura)); }
 
-  .theme-toggle{ position:relative; width:60px; height:32px; border-radius:999px; border:1px solid var(--card-border); background:var(--card-bg); box-shadow: var(--shadow-soft); cursor:pointer; display:flex; align-items:center; padding:3px; transition:var(--transition); flex-shrink:0; }
-  .theme-toggle .knob{ width:24px; height:24px; border-radius:50%; background: linear-gradient(155deg, var(--accent-gold), var(--accent-sakura-deep)); display:flex; align-items:center; justify-content:center; transform: translateX(0); transition: transform .4s var(--ease); box-shadow: 0 3px 8px rgba(0,0,0,.25); }
-  .app[data-theme="dark"] .theme-toggle .knob{ transform: translateX(28px); }
-  .theme-toggle .knob svg{ width:14px; height:14px; }
+  .topbar-actions{ display:flex; align-items:center; gap:8px; }
+  
+  .live-counter{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--card-bg); border:1px solid var(--card-border);
+    padding:6px 11px; border-radius:999px;
+    box-shadow:var(--shadow-soft);
+    font-family:'Poppins',sans-serif; font-size:11px; font-weight:600;
+    color:var(--ink); transition:var(--transition);
+    white-space:nowrap;
+  }
+  .pulse-dot{
+    width:7px; height:7px; background-color:#22c55e; border-radius:50%;
+    box-shadow:0 0 0 0 rgba(34,197,94,0.7);
+    animation:livePulse 1.8s infinite cubic-bezier(0.66,0,0,1);
+    flex-shrink:0;
+  }
+  @keyframes livePulse{
+    0%{ box-shadow:0 0 0 0 rgba(34,197,94,0.7); }
+    70%{ box-shadow:0 0 0 7px rgba(34,197,94,0); }
+    100%{ box-shadow:0 0 0 0 rgba(34,197,94,0); }
+  }
+
+  .theme-toggle{ position:relative; width:52px; height:30px; border-radius:999px; border:1px solid var(--card-border); background:var(--card-bg); box-shadow: var(--shadow-soft); cursor:pointer; display:flex; align-items:center; padding:3px; transition:var(--transition); flex-shrink:0; }
+  .theme-toggle .knob{ width:22px; height:22px; border-radius:50%; background: linear-gradient(155deg, var(--accent-gold), var(--accent-sakura-deep)); display:flex; align-items:center; justify-content:center; transform: translateX(0); transition: transform .4s var(--ease); box-shadow: 0 3px 8px rgba(0,0,0,.25); }
+  .app[data-theme="dark"] .theme-toggle .knob{ transform: translateX(22px); }
+  .theme-toggle .knob svg{ width:13px; height:13px; }
   .theme-toggle .icon-static{ position:absolute; }
-  .theme-toggle .icon-static.sun{ left:8px; } .theme-toggle .icon-static.moon{ right:7px; }
-  .theme-toggle .icon-static svg{ width:14px; height:14px; opacity:.55; }
+  .theme-toggle .icon-static.sun{ left:7px; } .theme-toggle .icon-static.moon{ right:6px; }
+  .theme-toggle .icon-static svg{ width:13px; height:13px; opacity:.55; }
   .theme-toggle .icon-static.sun svg{ stroke:var(--accent-gold); }
   .theme-toggle .icon-static.moon svg{ stroke:var(--accent-indigo); }
 
@@ -211,7 +232,7 @@
   .crumb .eyebrow{ font-family:'Noto Sans JP',sans-serif; font-size:10.5px; letter-spacing:.12em; font-weight:600; color:var(--ink-faint); text-transform:uppercase; }
   .crumb .crumb-title{ font-family:'Zen Kaku Gothic New',sans-serif; font-weight:700; font-size:17px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-  /* ============ FLASHCARD ============ */
+  /* ============ FLASHCARD FIX (ROBUST 3D GPU RENDERING) ============ */
   .meta-bar{ padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
   .meta-bar .meta-left{ display:flex; flex-direction:column; gap:3px; min-width:0; }
   .meta-bar .meta-cat{ font-family:'Noto Sans JP',sans-serif; font-weight:700; font-size:12.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -219,16 +240,50 @@
   .meta-bar .meta-right{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; min-width:78px; }
   .meta-bar .meta-count{ font-family:'Poppins',sans-serif; font-size:11px; font-weight:600; color:var(--ink-soft); white-space:nowrap; }
 
-  .flashcard{ position:relative; perspective:1400px; height:254px; cursor:pointer; margin-bottom:18px; }
-  .exclude-btn{ position:absolute; top:-12px; right:-8px; z-index:6; width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center; background:var(--card-bg); border:1px solid var(--card-border); box-shadow:var(--shadow-soft); cursor:pointer; transition:var(--transition), transform .2s var(--ease); }
+  .flashcard{
+    position:relative; width:100%; height:254px; cursor:pointer; margin-bottom:18px;
+    perspective:1200px; -webkit-perspective:1200px;
+  }
+  .exclude-btn{
+    position:absolute; top:-12px; right:-8px; z-index:10;
+    width:34px; height:34px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--card-bg); border:1px solid var(--card-border);
+    box-shadow:var(--shadow-soft); cursor:pointer;
+    transition:var(--transition), transform .2s var(--ease);
+  }
   .exclude-btn svg{ width:15px; height:15px; stroke:var(--ink-soft); }
   .exclude-btn:active{ transform:scale(.9); }
   .exclude-btn.is-excluded{ background: linear-gradient(155deg, var(--accent-gold), var(--accent-sakura-deep)); border-color:transparent; }
   .exclude-btn.is-excluded svg{ stroke:#fff; }
-  .flashcard-inner{ position:relative; width:100%; height:100%; transition: transform .65s var(--ease); transform-style:preserve-3d; }
-  .flashcard.flipped .flashcard-inner{ transform: rotateY(180deg); }
-  .face{ position:absolute; inset:0; border-radius:var(--radius-xl); backface-visibility:hidden; -webkit-backface-visibility:hidden; padding:18px; display:flex; flex-direction:column; background:var(--card-bg); border:1px solid var(--card-border); box-shadow:var(--shadow-card); transition:var(--transition); overflow:hidden; }
-  .face.back{ transform: rotateY(180deg); }
+
+  .flashcard-inner{
+    position:relative; width:100%; height:100%;
+    transition: transform .6s var(--ease);
+    transform-style:preserve-3d; -webkit-transform-style:preserve-3d;
+  }
+  .flashcard.flipped .flashcard-inner{
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg);
+  }
+
+  .face{
+    position:absolute; inset:0; width:100%; height:100%;
+    border-radius:var(--radius-xl); padding:18px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    background:var(--card-bg); border:1px solid var(--card-border);
+    box-shadow:var(--shadow-card); transition:var(--transition);
+    backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    transform: translate3d(0,0,0); -webkit-transform: translate3d(0,0,0);
+  }
+  .face.front{
+    transform: rotateY(0deg); -webkit-transform: rotateY(0deg);
+    z-index:2;
+  }
+  .face.back{
+    transform: rotateY(180deg); -webkit-transform: rotateY(180deg);
+    z-index:1;
+  }
 
   .face-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
   .face-top-left{ display:flex; align-items:center; gap:6px; min-width:0; }
@@ -240,9 +295,9 @@
   .learned-badge svg{ width:11px; height:11px; stroke:#fff; }
   .flashcard.is-learned .learned-badge{ opacity:1; transform:scale(1); }
 
-  .face-mid{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center; overflow-y:auto; padding:4px 0; }
+  .face-mid{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center; padding:4px 0; }
   .kana-word{ font-family:'Zen Kaku Gothic New',sans-serif; font-size:28px; font-weight:700; color:var(--ink); line-height:1.25; }
-  .kana-romaji{ font-family:'Poppins',sans-serif; font-size:13px; font-weight:500; color:var(--ink-faint); }
+  .kana-romaji{ font-family:'Poppins',sans-serif; font-size:13px; font-weight:500; color:var(--ink-faint); margin-top:2px; }
   .kanji-display{ font-family:'Zen Kaku Gothic New',sans-serif; font-size:62px; font-weight:900; color:var(--ink); line-height:1; }
 
   .face-bottom{ display:flex; align-items:center; justify-content:center; gap:6px; flex-shrink:0; }
@@ -250,7 +305,7 @@
   .flip-hint svg{ width:11px; height:11px; stroke:var(--ink-faint); }
 
   .arti-label{ font-family:'Noto Sans JP',sans-serif; font-size:10.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--accent-sakura-deep); }
-  .arti-text{ font-family:'Poppins',sans-serif; font-weight:700; font-size:18px; color:var(--ink); line-height:1.35; padding:0 4px; }
+  .arti-text{ font-family:'Poppins',sans-serif; font-weight:700; font-size:18px; color:var(--ink); line-height:1.35; padding:0 4px; text-align:center; }
 
   /* ============ NAV ROW ============ */
   .nav-row{ display:grid; grid-template-columns:1fr auto 1fr; gap:var(--gap); align-items:center; }
@@ -283,7 +338,6 @@
   .bunpou-desc{ font-family:'Noto Sans JP',sans-serif; font-size:12.5px; color:var(--ink-soft); line-height:1.6; }
   .bunpou-examples{ display:flex; flex-direction:column; gap:10px; border-top:1px dashed var(--card-border); padding-top:12px; }
   
-  /* Example Box 3 Tingkat */
   .example{ background:var(--card-bg-soft); border-left:3.5px solid var(--accent-gold); padding:10px 12px; border-radius:0 12px 12px 0; display:flex; flex-direction:column; gap:2px; }
   .example .jp-ex{ color:var(--ink); font-weight:700; font-size:13px; font-family:'Zen Kaku Gothic New',sans-serif; line-height:1.4; }
   .example .jp-romaji{ color:var(--accent-indigo); font-size:11px; font-weight:500; font-style:italic; line-height:1.3; }
@@ -294,7 +348,6 @@
   .bunpou-note-header svg{ width:17px; height:17px; stroke:var(--accent-gold); }
   .bunpou-note-body{ font-family:'Noto Sans JP',sans-serif; font-size:12px; color:var(--ink-soft); line-height:1.65; display:flex; flex-direction:column; gap:6px; }
 
-  /* Kaiwa Box Interaktif */
   .kaiwa-box{ padding:16px 18px; margin-bottom:16px; background:linear-gradient(135deg, color-mix(in srgb, var(--accent-indigo) 14%, var(--card-bg)) 0%, var(--card-bg) 100%); border:1px solid color-mix(in srgb, var(--accent-indigo) 28%, var(--card-border)); border-radius:var(--radius-lg); }
   .kaiwa-title{ font-family:'Zen Kaku Gothic New',sans-serif; font-weight:700; font-size:13px; color:var(--accent-indigo); margin-bottom:12px; display:flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:.05em; }
   .kaiwa-item{ display:flex; gap:8px; margin-bottom:12px; }
@@ -372,16 +425,75 @@
         <span class="title"><span>和</span> Flashcards</span>
         <span class="rule"></span>
       </div>
-      <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
-        <span class="icon-static sun"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
-        <span class="icon-static moon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></span>
-        <span class="knob"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" id="knobIcon"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
-      </button>
+      <div class="topbar-actions">
+        <!-- Live Counter -->
+        <div class="live-counter">
+          <span class="pulse-dot"></span>
+          <span id="user-count">1 sedang belajar</span>
+        </div>
+        <!-- Theme Toggle -->
+        <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema">
+          <span class="icon-static sun"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+          <span class="icon-static moon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></span>
+          <span class="knob"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" id="knobIcon"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+        </button>
+      </div>
     </div>
 
     <div id="screen"></div>
   </div>
 </div>
+
+<!-- ============================================================
+     FIREBASE REALTIME DATABASE (LIVE ONLINE COUNTER)
+     ============================================================ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    getDatabase, 
+    ref, 
+    onValue, 
+    push, 
+    onDisconnect, 
+    set 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDpVcVo-yn0plYtIe1Us68MOZ7CVcc1o8w",
+    authDomain: "flashcardo12.firebaseapp.com",
+    databaseURL: "https://flashcardo12-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "flashcardo12",
+    storageBucket: "flashcardo12.firebasestorage.app",
+    messagingSenderId: "77098450793",
+    appId: "1:77098450793:web:97319437563d90447bc7f8"
+  };
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const countElement = document.getElementById("user-count");
+    const connectedRef = ref(db, ".info/connected");
+    const onlineUsersRef = ref(db, "online_users");
+
+    onValue(connectedRef, (snap) => {
+      if (snap.val() === true) {
+        const myUserRef = push(onlineUsersRef);
+        set(myUserRef, { joinedAt: Date.now() });
+        onDisconnect(myUserRef).remove();
+      }
+    });
+
+    onValue(onlineUsersRef, (snap) => {
+      const totalOnline = snap.exists() ? Object.keys(snap.val()).length : 1;
+      if (countElement) {
+        countElement.textContent = `${totalOnline} sedang belajar`;
+      }
+    });
+  } catch (err) {
+    const countElement = document.getElementById("user-count");
+    if (countElement) countElement.textContent = "1 sedang belajar";
+  }
+</script>
 
 <script>
 /* ============================================================
@@ -414,7 +526,7 @@ const ICONS = {
 function icon(name){ return ICONS[name] || ''; }
 
 /* ============================================================
-   DATA BAB 10, 11, 12 — DENGAN HALAMAN BUKU RESMI
+   DATA BAB 10, 11, 12
    ============================================================ */
 function v(kana, arti, romaji){ return { type:'vocab', kana, arti, romaji }; }
 function k(kanji, on, onR, kun, kunR, contohJp, contohId){ return { type:'kanji', kanji, on, onR, kun, kunR, contohJp, contohId }; }
@@ -598,7 +710,7 @@ const CHAPTERS = [
     icon: 'cause', accent: 'accent-sakura',
     groups: [
       {
-        id: 'b12_g1', title: 'Tabel Kotoba: Sebab Akibat (Bagian 1)', desc: '12 Kosakata kata kerja & emosi', page: 'Halaman 79', kategori: 'Kotoba', icon: 'cause', accent: 'accent-sakura',
+        id: 'b12_g1', title: 'Tabel Kotoba 1: Kata Kerja & Emosi', desc: '12 Kosakata kata kerja & emosi', page: 'Halaman 79', kategori: 'Kotoba', icon: 'cause', accent: 'accent-sakura',
         cards: [
           v('わかります', 'Mengerti', 'wakarimasu'),
           v('あります', 'Ada (benda mati)', 'arimasu'),
@@ -615,7 +727,7 @@ const CHAPTERS = [
         ]
       },
       {
-        id: 'b12_g2', title: 'Tabel Kotoba: Sebab Akibat (Bagian 2)', desc: '34 Kosakata sifat, bencana, kegiatan & derajat', page: 'Halaman 79', kategori: 'Kotoba', icon: 'tool', accent: 'accent-indigo',
+        id: 'b12_g2', title: 'Tabel Kotoba 2: Sifat, Bencana & Derajat', desc: '34 Kosakata sifat, bencana, kegiatan & derajat', page: 'Halaman 79', kategori: 'Kotoba', icon: 'tool', accent: 'accent-indigo',
         cards: [
           v('ふくざつ[な]', 'Rumit / Ribet', 'fukuzatsu [na]'),
           v('じゃま[な]', 'Gangguan / Menghalangi', 'jama [na]'),
@@ -679,10 +791,14 @@ const STORE = { theme:'waFlashcards.theme', learned:'waFlashcards.learnedIds_n5'
 function safeGet(k, fb){ try{ const r = localStorage.getItem(k); return r === null ? fb : JSON.parse(r); }catch(e){ return fb; } }
 function safeSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 
-let learnedSet = new Set(safeGet(STORE.learned, []));
+let rawLearned = safeGet(STORE.learned, []);
+let learnedSet = new Set(Array.isArray(rawLearned) ? rawLearned : []);
 function saveLearned(){ safeSet(STORE.learned, Array.from(learnedSet)); }
-let excludedSet = new Set(safeGet(STORE.excluded, []));
+
+let rawExcluded = safeGet(STORE.excluded, []);
+let excludedSet = new Set(Array.isArray(rawExcluded) ? rawExcluded : []);
 function saveExcluded(){ safeSet(STORE.excluded, Array.from(excludedSet)); }
+
 function cardUid(gid, idx){ return gid + '#' + idx; }
 
 function totalCardsInGroup(g){ return g.cards.length; }
@@ -724,6 +840,7 @@ function collectPool(chapterIds, kanjiOnly){
   let pool = [];
   chapterIds.forEach(cid => {
     const chap = CHAPTERS.find(c => c.id === cid);
+    if (!chap) return;
     chap.groups.forEach(g => {
       const isKanji = g.id.endsWith('gk');
       if(kanjiOnly && !isKanji) return;
@@ -799,8 +916,10 @@ function goChapter(cid){ state.screen = 'chapter'; state.chapterId = cid; state.
 function goDeck(cid, gid){
   state.screen = 'deck'; state.chapterId = cid; state.groupId = gid; state.cardIndex = 0; state.shuffled = false;
   const chap = CHAPTERS.find(c => c.id === cid);
-  const g = chap.groups.find(gr => gr.id === gid);
-  state.order = g.cards.map((_,i)=>i);
+  if (chap) {
+    const g = chap.groups.find(gr => gr.id === gid);
+    if (g) state.order = g.cards.map((_,i)=>i);
+  }
   render();
 }
 function goBunpouViewer(tab){ state.screen = 'bunpou'; if(tab) state.bunpouTab = tab; render(); }
@@ -921,6 +1040,8 @@ function renderHome(){
    ============================================================ */
 function renderChapter(cid){
   const chap = CHAPTERS.find(c => c.id === cid);
+  if (!chap) { goHome(); return; }
+
   let rows = '';
   chap.groups.forEach(g => {
     const l = learnedCountInGroup(g);
@@ -1009,11 +1130,18 @@ function renderCardFace(card, kat, pageStr){
 
 function renderDeck(cid, gid){
   const chap = CHAPTERS.find(c => c.id === cid);
+  if (!chap) { goHome(); return; }
   const g = chap.groups.find(gr => gr.id === gid);
-  if(!state.order) state.order = g.cards.map((_,i)=>i);
+  if (!g) { goChapter(cid); return; }
+
+  if(!state.order || state.order.length === 0) state.order = g.cards.map((_,i)=>i);
+  if (state.cardIndex >= state.order.length) state.cardIndex = 0;
+
   const idx = state.cardIndex;
   const actualIdx = state.order[idx];
   const card = g.cards[actualIdx];
+  if (!card) { state.cardIndex = 0; render(); return; }
+
   const uid = cardUid(g.id, actualIdx);
   const isLearned = learnedSet.has(uid);
   const isExcluded = excludedSet.has(uid);
@@ -1053,7 +1181,7 @@ function renderDeck(cid, gid){
       </div>
 
       <div class="nav-row">
-        <button class="nav-btn" id="prevCard" ${idx===0?'disabled':''}><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevLeft')}</svg></Sebelumnya</button>
+        <button class="nav-btn" id="prevCard" ${idx===0?'disabled':''}><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevLeft')}</svg>Sebelumnya</button>
         <button class="shuffle-btn ${state.shuffled ? 'is-active' : ''}" id="shuffleDeck" title="Acak kartu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('shuffle')}</svg></button>
         <button class="nav-btn primary" id="nextCard" ${idx===total-1?'disabled':''}>Selanjutnya<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon('chevRight')}</svg></button>
       </div>
@@ -1099,7 +1227,7 @@ function renderBunpou(){
           </div>
           <div class="example">
             <span class="jp-ex">たなかさんが しごとを おえてから、かえりました。</span>
-            <span class="jp-romaji">Tanaka-san ga shigoto o构建ete kara, kaerimashita.</span>
+            <span class="jp-romaji">Tanaka-san ga shigoto o oete kara, kaerimashita.</span>
             <span class="jp-arti">Setelah Pak Tanaka menyelesaikan pekerjaan, beliau pulang.</span>
           </div>
           <div class="example">
@@ -2098,13 +2226,17 @@ screenEl.addEventListener('click', (e)=>{
 
   if(e.target.closest('#shuffleDeck')){
     const chap = CHAPTERS.find(c => c.id === state.chapterId);
-    const g = chap.groups.find(gr => gr.id === state.groupId);
-    let pool = g.cards.map((_,i)=>i).filter(i => !excludedSet.has(cardUid(g.id, i)));
-    if(pool.length === 0) pool = g.cards.map((_,i)=>i);
-    state.order = shuffleArray(pool);
-    state.cardIndex = 0;
-    state.shuffled = true;
-    renderDeck(state.chapterId, state.groupId);
+    if (chap) {
+      const g = chap.groups.find(gr => gr.id === state.groupId);
+      if (g) {
+        let pool = g.cards.map((_,i)=>i).filter(i => !excludedSet.has(cardUid(g.id, i)));
+        if(pool.length === 0) pool = g.cards.map((_,i)=>i);
+        state.order = shuffleArray(pool);
+        state.cardIndex = 0;
+        state.shuffled = true;
+        renderDeck(state.chapterId, state.groupId);
+      }
+    }
     return;
   }
 
@@ -2125,20 +2257,28 @@ screenEl.addEventListener('click', (e)=>{
   const soundBtn = e.target.closest('.sound-btn');
   if(soundBtn){
     const chap = CHAPTERS.find(c => c.id === state.chapterId);
-    const g = chap.groups.find(gr => gr.id === state.groupId);
-    const card = g.cards[state.order[state.cardIndex]];
-    speakKana(card.type === 'kanji' ? card.contohJp : card.kana);
+    if (chap) {
+      const g = chap.groups.find(gr => gr.id === state.groupId);
+      if (g) {
+        const card = g.cards[state.order[state.cardIndex]];
+        if (card) speakKana(card.type === 'kanji' ? card.contohJp : card.kana);
+      }
+    }
     return;
   }
 
   const exBtn = e.target.closest('#excludeCard');
   if(exBtn){
     const chap = CHAPTERS.find(c => c.id === state.chapterId);
-    const g = chap.groups.find(gr => gr.id === state.groupId);
-    const uid = cardUid(g.id, state.order[state.cardIndex]);
-    if(excludedSet.has(uid)) excludedSet.delete(uid); else excludedSet.add(uid);
-    saveExcluded();
-    renderDeck(state.chapterId, state.groupId);
+    if (chap) {
+      const g = chap.groups.find(gr => gr.id === state.groupId);
+      if (g) {
+        const uid = cardUid(g.id, state.order[state.cardIndex]);
+        if(excludedSet.has(uid)) excludedSet.delete(uid); else excludedSet.add(uid);
+        saveExcluded();
+        renderDeck(state.chapterId, state.groupId);
+      }
+    }
     return;
   }
 
@@ -2146,12 +2286,16 @@ screenEl.addEventListener('click', (e)=>{
   if(cardEl){
     cardEl.classList.toggle('flipped');
     const chap = CHAPTERS.find(c => c.id === state.chapterId);
-    const g = chap.groups.find(gr => gr.id === state.groupId);
-    const uid = cardUid(g.id, state.order[state.cardIndex]);
-    if(cardEl.classList.contains('flipped') && !learnedSet.has(uid)){
-      learnedSet.add(uid);
-      cardEl.classList.add('is-learned');
-      saveLearned();
+    if (chap) {
+      const g = chap.groups.find(gr => gr.id === state.groupId);
+      if (g) {
+        const uid = cardUid(g.id, state.order[state.cardIndex]);
+        if(cardEl.classList.contains('flipped') && !learnedSet.has(uid)){
+          learnedSet.add(uid);
+          cardEl.classList.add('is-learned');
+          saveLearned();
+        }
+      }
     }
     return;
   }
